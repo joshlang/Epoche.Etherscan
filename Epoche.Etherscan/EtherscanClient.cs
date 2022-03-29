@@ -131,8 +131,8 @@ public class EtherscanClient
         return results.ToDictionary(x => x.Account, x => x.Balance);
     }
 
-    public Task<TransactionResult[]> GetNormalTransactionsAsync(string address, CancellationToken cancellationToken = default) =>
-        GetMultiPageResultAsync<TransactionResult>("account", "txlist", cancellationToken, ("address", address), ("startblock", "0"), ("endblock", "9999999999999999"));
+    public Task<TransactionResult[]> GetNormalTransactionsAsync(string address, long startBlock = 0, long endBlock = 9999999999999999L, CancellationToken cancellationToken = default) =>
+        GetMultiPageResultAsync<TransactionResult>("account", "txlist", cancellationToken, ("address", address), ("startblock", startBlock.ToString()), ("endblock", endBlock.ToString()));
 
     public async Task<BigFraction> GetTokenBalanceAsync(string address, string contractAddress, CancellationToken cancellationToken = default)
     {
