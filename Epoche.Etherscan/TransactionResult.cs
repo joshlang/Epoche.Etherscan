@@ -2,9 +2,9 @@
 
 public class TransactionResult
 {
-    [JsonInclude] public string value { private get; init; } = default!;
-    [JsonInclude] public string gasPrice { private get; init; } = default!;
-    [JsonInclude] public string isError { private get; init; } = default!;
+    public string value { private get; init; } = default!;
+    public string gasPrice { private get; init; } = default!;
+    public string isError { private get; init; } = default!;
 
     public long BlockNumber { get; init; }
     public long Timestamp { get; init; }
@@ -20,7 +20,6 @@ public class TransactionResult
     public long Confirmations { get; init; }
     public int TransactionIndex { get; init; }
     public string Hash { get; init; } = default!;
-
     public string? BlockHash { get; init; }
     public string From { get; init; } = default!;
     public string To { get; init; } = default!;

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using Microsoft.Extensions.Options;
 
 namespace Epoche.Etherscan;
@@ -80,8 +81,11 @@ public class EtherscanClient
             }
             var resultString = await getResult.EnsureSuccessStatusCode().Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var doc = JsonDocument.Parse(resultString);
-            if (doc.RootElement.GetProperty("status").GetString() == "0" &&
-                doc.RootElement.GetProperty("result").ValueKind == JsonValueKind.String)
+            if (doc.RootElement.TryGetProperty("status", out var statusProp) &&
+                statusProp.ValueKind == JsonValueKind.String &&
+                statusProp.GetString() == "0" &&
+                doc.RootElement.TryGetProperty("result", out var resultProp) &&
+                resultProp.ValueKind == JsonValueKind.String)
             {
                 var errorResult = JsonSerializer.Deserialize<EtherscanResult<string>>(resultString, Options)!;
                 if (errorResult.Result?.Contains(MagicRateLimitFragment) == true)
@@ -174,5 +178,17 @@ public class EtherscanClient
             p.Add(("txhash", transactionHash));
         }
         return GetMultiPageResultAsync<InternalTransactionResult>("account", "txlistinternal", cancellationToken, p.ToArray());
+    }
+
+    public async Task<TransactionResult?> GetNormalTransactionAsync(string transactionHash, CancellationToken cancellationToken = default)
+    {
+        var proxyTx = await GetResultAsync<ProxyTransactionResult>("proxy", "eth_getTransactionByHash", cancellationToken, ("txhash", transactionHash));
+        if (proxyTx is null)
+        {
+            return null;
+        }
+        long blockNumber = long.Parse(proxyTx.BlockNumber[2..], NumberStyles.HexNumber);
+        var txes = await GetNormalTransactionsAsync(address: proxyTx.From, startBlock: blockNumber, endBlock: blockNumber, cancellationToken: cancellationToken);
+        return txes.Single(x => x.Hash.Equals(transactionHash, StringComparison.OrdinalIgnoreCase));
     }
 }
