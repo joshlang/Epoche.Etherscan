@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using Microsoft.Extensions.Options;
 
 namespace Epoche.Etherscan;
@@ -182,13 +181,40 @@ public class EtherscanClient
 
     public async Task<TransactionResult?> GetNormalTransactionAsync(string transactionHash, CancellationToken cancellationToken = default)
     {
-        var proxyTx = await GetResultAsync<ProxyTransactionResult>("proxy", "eth_getTransactionByHash", cancellationToken, ("txhash", transactionHash));
+        var proxyTx = await GetResultAsync<ProxyTransactionResult>("proxy", "eth_getTransactionByHash", cancellationToken, ("txhash", transactionHash)).ConfigureAwait(false);
         if (proxyTx is null)
         {
             return null;
         }
-        long blockNumber = long.Parse(proxyTx.BlockNumber[2..], NumberStyles.HexNumber);
-        var txes = await GetNormalTransactionsAsync(address: proxyTx.From, startBlock: blockNumber, endBlock: blockNumber, cancellationToken: cancellationToken);
+        var blockNumber = proxyTx.BlockNumber.HexToLong();
+        var txes = await GetNormalTransactionsAsync(address: proxyTx.From, startBlock: blockNumber, endBlock: blockNumber, cancellationToken: cancellationToken).ConfigureAwait(false);
         return txes.Single(x => x.Hash.Equals(transactionHash, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public async Task<long> GetBlockNumberAsync(CancellationToken cancellationToken = default)
+    {
+        var blockNumber = await GetResultAsync<string>("proxy", "eth_blockNumber", cancellationToken).ConfigureAwait(false);
+        return blockNumber.HexToLong();
+    }
+
+    public Task<string> GetCodeAsync(string address, CancellationToken cancellationToken = default) =>
+        GetResultAsync<string>("proxy", "eth_getCode", cancellationToken, ("address", address));
+
+    public async Task<BigFraction> GetGasPriceAsync(CancellationToken cancellationToken = default)
+    {
+        var gasPrice = await GetResultAsync<string>("proxy", "eth_gasPrice", cancellationToken).ConfigureAwait(false);
+        return gasPrice.HexToWei();
+    }
+
+    public Task<string> CallAsync(string to, string inputData, CancellationToken cancellationToken = default) =>
+        GetResultAsync<string>("proxy", "eth_call", cancellationToken, ("to", to), ("data", inputData), TagLatest);
+
+    public Task<string> SendRawTransactionAsync(string hex, CancellationToken cancellationToken = default) =>
+        GetResultAsync<string>("proxy", "eth_sendRawTransaction", cancellationToken, ("hex", hex));
+
+    public async Task<long> GetTransactionCountAsync(string address, CancellationToken cancellationToken = default)
+    {
+        var count = await GetResultAsync<string>("proxy", "eth_getTransactionCount", cancellationToken, ("address", address), TagLatest).ConfigureAwait(false);
+        return count.HexToLong();
     }
 }
