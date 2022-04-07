@@ -244,7 +244,7 @@ public class EtherscanClient
         BytesToString(await CallAsync(to: address, inputData: "0x95d89b41", cancellationToken).ConfigureAwait(false));
     public async Task<int> GetTokenDecimalsAsync(string address, CancellationToken cancellationToken = default) =>
         (int)(await CallAsync(to: address, inputData: "0x313ce567", cancellationToken).ConfigureAwait(false)).HexToLong();
-    public async Task<BigFraction> GetERC20TotalSupplyAsync(string address, int? decimals, CancellationToken cancellationToken = default) 
+    public async Task<BigFraction> GetTotalSupplyAsync(string address, int? decimals, CancellationToken cancellationToken = default) 
     {
         decimals ??= await GetTokenDecimalsAsync(address, cancellationToken).ConfigureAwait(false);
         return (await CallAsync(to: address, inputData: "0x18160ddd", cancellationToken).ConfigureAwait(false)).HexToWei(decimals.Value);
