@@ -26,13 +26,13 @@ static class StringExtensions
         }
         return long.Parse(s, NumberStyles.HexNumber);
     }
-    public static BigFraction HexToWei(this string s)
+    public static BigFraction HexToWei(this string s, int decimals = 18)
     {
         if (s.StartsWith("0x"))
         {
             s = s[2..];
         }
         BigFraction bf = BigInteger.Parse(s, NumberStyles.HexNumber);
-        return bf.DividePow10(18);
+        return bf.DividePow10(decimals);
     }
 }

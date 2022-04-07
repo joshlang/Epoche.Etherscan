@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using System.Numerics;
+using System.Text;
 using Microsoft.Extensions.Options;
 
 namespace Epoche.Etherscan;
@@ -34,6 +36,24 @@ public class EtherscanClient
     }
     public EtherscanClient(IOptions<EtherscanClientOptions> options) : this(options.Value.Endpoint, options.Value.ApiKey, options.Value.MinCallInterval)
     {
+    }
+
+    static string BytesToString(string encoded)
+    {
+        var raw = encoded[130..].ToHexBytes().AsSpan();
+        if (raw.Length == 0 || raw[0] == 0)
+        {
+            return "";
+        }
+        for (var x = 1; x < raw.Length; ++x)
+        {
+            if (raw[x] == 0)
+            {
+                raw = raw[..x];
+                break;
+            }
+        }
+        return Encoding.UTF8.GetString(raw);
     }
 
     async Task RateLimitAsync(CancellationToken cancellationToken)
@@ -216,5 +236,17 @@ public class EtherscanClient
     {
         var count = await GetResultAsync<string>("proxy", "eth_getTransactionCount", cancellationToken, ("address", address), TagLatest).ConfigureAwait(false);
         return count.HexToLong();
+    }
+
+    public async Task<string> GetTokenNameAsync(string address, CancellationToken cancellationToken = default) =>
+        BytesToString(await CallAsync(to: address, inputData: "0x06fdde03", cancellationToken).ConfigureAwait(false));
+    public async Task<string> GetTokenSymbolAsync(string address, CancellationToken cancellationToken = default) =>
+        BytesToString(await CallAsync(to: address, inputData: "0x95d89b41", cancellationToken).ConfigureAwait(false));
+    public async Task<int> GetTokenDecimalsAsync(string address, CancellationToken cancellationToken = default) =>
+        (int)(await CallAsync(to: address, inputData: "0x313ce567", cancellationToken).ConfigureAwait(false)).HexToLong();
+    public async Task<BigFraction> GetERC20TotalSupplyAsync(string address, int? decimals, CancellationToken cancellationToken = default) 
+    {
+        decimals ??= await GetTokenDecimalsAsync(address, cancellationToken).ConfigureAwait(false);
+        return (await CallAsync(to: address, inputData: "0x18160ddd", cancellationToken).ConfigureAwait(false)).HexToWei(decimals.Value);
     }
 }
