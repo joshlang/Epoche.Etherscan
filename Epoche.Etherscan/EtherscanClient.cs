@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Numerics;
-using System.Text;
 using Microsoft.Extensions.Options;
 
 namespace Epoche.Etherscan;
@@ -38,23 +36,8 @@ public class EtherscanClient
     {
     }
 
-    static string BytesToString(string encoded)
-    {
-        var raw = encoded[130..].ToHexBytes().AsSpan();
-        if (raw.Length == 0 || raw[0] == 0)
-        {
-            return "";
-        }
-        for (var x = 1; x < raw.Length; ++x)
-        {
-            if (raw[x] == 0)
-            {
-                raw = raw[..x];
-                break;
-            }
-        }
-        return Encoding.UTF8.GetString(raw);
-    }
+    public EtherscanERC20Client ERC20(string contractAddress) => new(this, contractAddress);
+    public EtherscanLiquidityPairClient LiquidityPair(string contractAddress) => new(this, contractAddress);
 
     async Task RateLimitAsync(CancellationToken cancellationToken)
     {
@@ -238,15 +221,4 @@ public class EtherscanClient
         return count.HexToLong();
     }
 
-    public async Task<string> GetTokenNameAsync(string address, CancellationToken cancellationToken = default) =>
-        BytesToString(await CallAsync(to: address, inputData: "0x06fdde03", cancellationToken).ConfigureAwait(false));
-    public async Task<string> GetTokenSymbolAsync(string address, CancellationToken cancellationToken = default) =>
-        BytesToString(await CallAsync(to: address, inputData: "0x95d89b41", cancellationToken).ConfigureAwait(false));
-    public async Task<int> GetTokenDecimalsAsync(string address, CancellationToken cancellationToken = default) =>
-        (int)(await CallAsync(to: address, inputData: "0x313ce567", cancellationToken).ConfigureAwait(false)).HexToLong();
-    public async Task<BigFraction> GetTotalSupplyAsync(string address, int? decimals, CancellationToken cancellationToken = default) 
-    {
-        decimals ??= await GetTokenDecimalsAsync(address, cancellationToken).ConfigureAwait(false);
-        return (await CallAsync(to: address, inputData: "0x18160ddd", cancellationToken).ConfigureAwait(false)).HexToWei(decimals.Value);
-    }
 }
