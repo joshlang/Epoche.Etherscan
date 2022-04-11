@@ -1,33 +1,32 @@
 ﻿namespace Epoche.Etherscan;
 public class EtherscanERC20Client
 {
-    readonly EtherscanClient EtherscanClient;
+    readonly EtherscanCallClient Client;
     readonly string ContractAddress;
 
     string? Name, Symbol;
     int? Decimals;
 
-    public EtherscanERC20Client(EtherscanClient etherscanClient, string contractAddress)
+    public EtherscanERC20Client(EtherscanCallClient client, string contractAddress)
     {
-        EtherscanClient = etherscanClient ?? throw new ArgumentNullException(nameof(etherscanClient));
+        Client = client ?? throw new ArgumentNullException(nameof(client));
         ContractAddress = contractAddress ?? throw new ArgumentNullException(nameof(contractAddress));
     }
 
     public async Task<string> GetNameAsync(CancellationToken cancellationToken = default) =>
-        Name ??= (await EtherscanClient.CallAsync(to: ContractAddress, inputData: "0x06fdde03", cancellationToken).ConfigureAwait(false)).BytesToString();
+        Name ??= await Client.GetStringAsync(ContractAddress, "name()", null, cancellationToken).ConfigureAwait(false);
     public async Task<string> GetSymbolAsync(CancellationToken cancellationToken = default) =>
-        Symbol ??= (await EtherscanClient.CallAsync(to: ContractAddress, inputData: "0x95d89b41", cancellationToken).ConfigureAwait(false)).BytesToString();
+        Symbol ??= await Client.GetStringAsync(ContractAddress, "symbol()", null, cancellationToken).ConfigureAwait(false);
     public async Task<int> GetDecimalsAsync(CancellationToken cancellationToken = default) =>
-        Decimals ??= (int)(await EtherscanClient.CallAsync(to: ContractAddress, inputData: "0x313ce567", cancellationToken).ConfigureAwait(false)).HexToLong();
+        Decimals ??= await Client.GetInt32Async(ContractAddress, "decimals()", null, cancellationToken).ConfigureAwait(false);
     public async Task<BigFraction> GetTotalSupplyAsync(int? decimals, CancellationToken cancellationToken = default)
     {
         decimals ??= await GetDecimalsAsync(cancellationToken).ConfigureAwait(false);
-        return (await EtherscanClient.CallAsync(to: ContractAddress, inputData: "0x18160ddd", cancellationToken).ConfigureAwait(false)).HexToWei(decimals.Value);
+        return await Client.GetDecimalAsync(ContractAddress, "totalSupply()", null, decimals.Value, cancellationToken).ConfigureAwait(false);
     }
     public async Task<BigFraction> GetBalanceOfAsync(string address, int? decimals, CancellationToken cancellationToken = default)
     {
         decimals ??= await GetDecimalsAsync(cancellationToken).ConfigureAwait(false);
-        var input = "0x70a08231000000000000000000000000" + address[2..].ToLower();
-        return (await EtherscanClient.CallAsync(to: ContractAddress, inputData: input, cancellationToken).ConfigureAwait(false)).HexToWei(decimals.Value);
+        return await Client.GetDecimalAsync(ContractAddress, "balanceOf(address)", "000000000000000000000000" + address[2..].ToLower(), decimals.Value, cancellationToken).ConfigureAwait(false);
     }
 }

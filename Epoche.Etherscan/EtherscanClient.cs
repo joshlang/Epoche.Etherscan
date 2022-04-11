@@ -36,8 +36,10 @@ public class EtherscanClient
     {
     }
 
-    public EtherscanERC20Client ERC20(string contractAddress) => new(this, contractAddress);
-    public EtherscanLiquidityPairClient LiquidityPair(string contractAddress) => new(this, contractAddress);
+    public EtherscanERC20Client ERC20(string contractAddress) => new(Call, contractAddress);
+    public EtherscanLiquidityPairClient LiquidityPair(string contractAddress) => new(Call, contractAddress);
+    EtherscanCallClient? call;
+    public EtherscanCallClient Call => call ??= new(this);
 
     async Task RateLimitAsync(CancellationToken cancellationToken)
     {
@@ -57,7 +59,7 @@ public class EtherscanClient
         }
     }
 
-    async Task<T> GetResultAsync<T>(string module, string action, CancellationToken cancellationToken, params (string Key, string Value)[] parameters) where T : class
+    internal async Task<T> GetResultAsync<T>(string module, string action, CancellationToken cancellationToken, params (string Key, string Value)[] parameters) where T : class
     {
         var callParams = new List<(string Key, string Value)>(3)
         {
@@ -208,9 +210,6 @@ public class EtherscanClient
         var gasPrice = await GetResultAsync<string>("proxy", "eth_gasPrice", cancellationToken).ConfigureAwait(false);
         return gasPrice.HexToWei();
     }
-
-    public Task<string> CallAsync(string to, string inputData, CancellationToken cancellationToken = default) =>
-        GetResultAsync<string>("proxy", "eth_call", cancellationToken, ("to", to), ("data", inputData), TagLatest);
 
     public Task<string> SendRawTransactionAsync(string hex, CancellationToken cancellationToken = default) =>
         GetResultAsync<string>("proxy", "eth_sendRawTransaction", cancellationToken, ("hex", hex));

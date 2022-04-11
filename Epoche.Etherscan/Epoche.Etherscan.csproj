@@ -15,11 +15,12 @@
 		<PackageId>Epoche.Etherscan</PackageId>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/joshlang/Epoche.Etherscan</PackageProjectUrl>
-		<Version>1.0.5</Version>
+		<Version>1.0.6</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Epoche.Shared" Version="1.0.25" />
+		<PackageReference Include="Epoche.Shared" Version="1.0.26" />
+		<PackageReference Include="Keccak256" Version="1.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
 	</ItemGroup>
 

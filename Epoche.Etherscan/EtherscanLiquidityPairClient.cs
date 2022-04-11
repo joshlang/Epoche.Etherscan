@@ -1,22 +1,22 @@
 ﻿namespace Epoche.Etherscan;
 public class EtherscanLiquidityPairClient
 {
-    readonly EtherscanClient EtherscanClient;
+    readonly EtherscanCallClient Client;
     readonly string ContractAddress;
 
     string? Token0, Token1;
 
-    public EtherscanLiquidityPairClient(EtherscanClient etherscanClient, string contractAddress)
+    public EtherscanLiquidityPairClient(EtherscanCallClient client, string contractAddress)
     {
-        EtherscanClient = etherscanClient ?? throw new ArgumentNullException(nameof(etherscanClient));
+        Client = client ?? throw new ArgumentNullException(nameof(client));
         ContractAddress = contractAddress ?? throw new ArgumentNullException(nameof(contractAddress));
     }
 
     public async Task<string> GetToken0Async(CancellationToken cancellationToken = default) =>
-        Token0 ??= (await EtherscanClient.CallAsync(to: ContractAddress, inputData: "0x0dfe1681", cancellationToken).ConfigureAwait(false)).BytesToAddress();
+        Token0 ??= await Client.GetAddressAsync(ContractAddress, "token0()", null, cancellationToken).ConfigureAwait(false);
     public async Task<string> GetToken1Async(CancellationToken cancellationToken = default) =>
-        Token1 ??= (await EtherscanClient.CallAsync(to: ContractAddress, inputData: "0xd21220a7", cancellationToken).ConfigureAwait(false)).BytesToAddress();
+        Token1 ??= await Client.GetAddressAsync(ContractAddress, "token1()", null, cancellationToken).ConfigureAwait(false);
 
     EtherscanERC20Client? erc20;
-    public EtherscanERC20Client ERC20 => erc20 ??= new(EtherscanClient, ContractAddress);
+    public EtherscanERC20Client ERC20 => erc20 ??= new(Client, ContractAddress);
 }
