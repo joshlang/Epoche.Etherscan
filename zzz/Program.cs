@@ -4,7 +4,7 @@ using Epoche.Etherscan;
 using Epoche.Shared;
 
 var c = new EtherscanClient();
-
+var num = await c.GetBlockNumberAsync();
 var a1 = Keccak256.ComputeEthereumFunctionSelector("deposit(uint256,address,bool)");
 var a2 = Keccak256.ComputeEthereumFunctionSelector("withdraw(uint256,bool)");
 

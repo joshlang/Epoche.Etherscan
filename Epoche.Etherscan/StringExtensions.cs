@@ -30,7 +30,7 @@ static class StringExtensions
         {
             s = s[2..];
         }
-        return BigInteger.Parse(s, NumberStyles.HexNumber);
+        return BigInteger.Parse("0" + s, NumberStyles.HexNumber);
     }
     public static BigFraction HexToWei(this string s, int decimals = 18)
     {
