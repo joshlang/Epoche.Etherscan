@@ -1,4 +1,6 @@
-﻿namespace Epoche.Etherscan;
+﻿using System.Numerics;
+
+namespace Epoche.Etherscan;
 public class EtherscanCallClient
 {
     readonly EtherscanClient EtherscanClient;
@@ -25,7 +27,7 @@ public class EtherscanCallClient
         GetRawAsync(contractAddress, GetInputData(functionSignature, data), cancellationToken);
 
     public async Task<string> GetStringAsync(string contractAddress, string inputData, CancellationToken cancellationToken = default) =>
-        (await GetRawAsync(contractAddress, inputData, cancellationToken).ConfigureAwait(false)).BytesToString();
+        (await GetRawAsync(contractAddress, inputData, cancellationToken).ConfigureAwait(false)).EncodedBytesToString();
 
     public Task<string> GetStringAsync(string contractAddress, string functionSignature, string? data, CancellationToken cancellationToken = default) =>
         GetStringAsync(contractAddress, GetInputData(functionSignature, data), cancellationToken);
@@ -36,6 +38,12 @@ public class EtherscanCallClient
     public Task<int> GetInt32Async(string contractAddress, string functionSignature, string? data, CancellationToken cancellationToken = default) =>
         GetInt32Async(contractAddress, GetInputData(functionSignature, data), cancellationToken);
 
+    public async Task<BigInteger> GetBigIntegerAsync(string contractAddress, string inputData, CancellationToken cancellationToken = default) =>
+        (await GetRawAsync(contractAddress, inputData, cancellationToken).ConfigureAwait(false)).HexToBigInteger();
+
+    public Task<BigInteger> GetBigIntegerAsync(string contractAddress, string functionSignature, string? data, CancellationToken cancellationToken = default) =>
+        GetBigIntegerAsync(contractAddress, GetInputData(functionSignature, data), cancellationToken);
+
     public async Task<long> GetInt64Async(string contractAddress, string inputData, CancellationToken cancellationToken = default) =>
         (await GetRawAsync(contractAddress, inputData, cancellationToken).ConfigureAwait(false)).HexToLong();
 
@@ -43,7 +51,7 @@ public class EtherscanCallClient
         GetInt64Async(contractAddress, GetInputData(functionSignature, data), cancellationToken);
 
     public async Task<string> GetAddressAsync(string contractAddress, string inputData, CancellationToken cancellationToken = default) =>
-        (await GetRawAsync(contractAddress, inputData, cancellationToken).ConfigureAwait(false)).BytesToAddress();
+        (await GetRawAsync(contractAddress, inputData, cancellationToken).ConfigureAwait(false)).EncodedBytesToAddress();
 
     public Task<string> GetAddressAsync(string contractAddress, string functionSignature, string? data, CancellationToken cancellationToken = default) =>
         GetAddressAsync(contractAddress, GetInputData(functionSignature, data), cancellationToken);

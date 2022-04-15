@@ -1,8 +1,15 @@
 ﻿using System.Text;
+using Epoche;
 using Epoche.Etherscan;
 using Epoche.Shared;
 
 var c = new EtherscanClient();
+
+var a1 = Keccak256.ComputeEthereumFunctionSelector("deposit(uint256,address,bool)");
+var a2 = Keccak256.ComputeEthereumFunctionSelector("withdraw(uint256,bool)");
+
+
+
 
 var addr = "0xbb2b8038a1640196fbe3e38816f3e67cba72d940";
 var supply = await c.ERC20(addr).GetTotalSupplyAsync(null);
