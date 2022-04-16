@@ -19,36 +19,36 @@ static class StringExtensions
         }
         return bf.DividePow10(decimals);
     }
-    public static long HexToLong(this string s) => (long)HexToBigInteger(s);
-    public static BigInteger HexToBigInteger(this string s)
-    {
-        if (s is null)
-        {
-            throw new ArgumentNullException(nameof(s));
-        }
-        if (s.StartsWith("0x"))
-        {
-            s = s[2..];
-        }
-        return BigInteger.Parse("0" + s, NumberStyles.HexNumber);
-    }
+    public static long HexToLong(this string s) => long.Parse("0" + Strip0x(s), NumberStyles.HexNumber);
     public static BigFraction HexToWei(this string s, int decimals = 18)
     {
-        BigFraction bf = HexToBigInteger(s);
+        BigFraction bf = BigInteger.Parse("0" + s, NumberStyles.HexNumber);
+        return bf.DividePow10(decimals);
+    }
+
+    public static BigInteger EncodedHexToBigInteger(this string encoded)
+    {
+        encoded = Strip0x(encoded);
+        if (encoded.Length != 64)
+        {
+            throw new FormatException($"'{encoded}' is not encoded as a uint256");
+        }
+        return BigInteger.Parse("0" + encoded, NumberStyles.HexNumber);
+    }
+    public static BigFraction EncodedHexToWei(this string s, int decimals = 18)
+    {
+        BigFraction bf = EncodedHexToBigInteger(s);
         return bf.DividePow10(decimals);
     }
     public static string EncodedBytesToString(this string encoded)
     {
-        if (encoded is null || encoded.Length < 130)
+        encoded = Strip0x(encoded);
+        if (encoded.Length < 128)
         {
             throw new FormatException($"'{encoded}' is not encoded as a string");
         }
 
-        var raw = encoded[130..].ToHexBytes().AsSpan();
-        if (raw.Length == 0 || raw[0] == 0)
-        {
-            return "";
-        }
+        var raw = encoded[128..].ToHexBytes().AsSpan();
         for (var x = 1; x < raw.Length; ++x)
         {
             if (raw[x] == 0)
@@ -59,8 +59,18 @@ static class StringExtensions
         }
         return Encoding.UTF8.GetString(raw);
     }
-    public static string EncodedBytesToAddress(this string encoded) =>
-        encoded?.Length != 66 || encoded[2..26].Any(x => x != '0') ?
-        throw new FormatException($"'{encoded}' is not an address") :
-        "0x" + encoded[26..];
+    public static string EncodedBytesToAddress(this string encoded)
+    {
+        encoded = Strip0x(encoded);
+        if (encoded.Length != 64 || encoded[..24].Any(x => x != '0'))
+        {
+            throw new FormatException($"'{encoded}' is not an address");
+        }
+        return "0x" + encoded[24..];
+    }
+    static string Strip0x(string? s) => s is null
+        ? throw new ArgumentNullException(nameof(s))
+        : s.StartsWith("0x") == true
+        ? s[2..]
+        : s;
 }
