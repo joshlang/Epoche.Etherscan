@@ -11,11 +11,11 @@ static class StringExtensions
     {
         if (!BigFraction.TryParse(s, out var bf))
         {
-            throw new FormatException($"'{s}' is not an integer");
+            throw new EtherscanException($"'{s}' is not an integer");
         }
         if (bf.Sign < 0)
         {
-            throw new FormatException($"'{s}' is negative");
+            throw new EtherscanException($"'{s}' is negative");
         }
         return bf.DividePow10(decimals);
     }
@@ -31,7 +31,7 @@ static class StringExtensions
         encoded = Strip0x(encoded);
         if (encoded.Length != 64)
         {
-            throw new FormatException($"'{encoded}' is not encoded as a uint256");
+            throw new EtherscanException($"'{encoded}' is not encoded as a uint256");
         }
         return BigInteger.Parse("0" + encoded, NumberStyles.HexNumber);
     }
@@ -45,7 +45,7 @@ static class StringExtensions
         encoded = Strip0x(encoded);
         if (encoded.Length < 128)
         {
-            throw new FormatException($"'{encoded}' is not encoded as a string");
+            throw new EtherscanException($"'{encoded}' is not encoded as a string");
         }
 
         var raw = encoded[128..].ToHexBytes().AsSpan();
@@ -64,12 +64,12 @@ static class StringExtensions
         encoded = Strip0x(encoded);
         if (encoded.Length != 64 || encoded[..24].Any(x => x != '0'))
         {
-            throw new FormatException($"'{encoded}' is not an address");
+            throw new EtherscanException($"'{encoded}' is not an address");
         }
         return "0x" + encoded[24..];
     }
     static string Strip0x(string? s) => s is null
-        ? throw new ArgumentNullException(nameof(s))
+        ? throw new EtherscanException("encoded value is missing")
         : s.StartsWith("0x") == true
         ? s[2..]
         : s;

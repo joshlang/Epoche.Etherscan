@@ -15,7 +15,7 @@
 		<PackageId>Epoche.Etherscan</PackageId>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageProjectUrl>https://github.com/joshlang/Epoche.Etherscan</PackageProjectUrl>
-		<Version>1.0.9</Version>
+		<Version>1.0.10</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

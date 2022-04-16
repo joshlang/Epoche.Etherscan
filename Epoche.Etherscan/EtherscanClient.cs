@@ -101,7 +101,7 @@ public class EtherscanClient
             var result = JsonSerializer.Deserialize<EtherscanResult<T>>(resultString, Options);
             if (result is null)
             {
-                throw new FormatException("Null result returned from the API");
+                throw new EtherscanException("Null result returned from the API");
             }
             return result.Result!;
         }
