@@ -5,6 +5,7 @@ public class TransactionResult
     public string value { private get; init; } = default!;
     public string gasPrice { private get; init; } = default!;
     public string isError { private get; init; } = default!;
+    public string? txreceipt_status { private get; init; } = default;
 
     public long BlockNumber { get; init; }
     public long Timestamp { get; init; }
@@ -14,7 +15,7 @@ public class TransactionResult
     public long Gas { get; init; }
     BigFraction? _gasPrice;
     [JsonIgnore] public BigFraction GasPrice => _gasPrice ??= gasPrice.FromWei();
-    [JsonIgnore] public bool IsError => isError != "0";
+    [JsonIgnore] public bool IsError => isError != "0" || txreceipt_status == "0";
     public long GasUsed { get; init; }
     public long CumulativeGasUsed { get; init; }
     public long Confirmations { get; init; }
