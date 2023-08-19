@@ -2,10 +2,10 @@
 
 public class TransactionResult
 {
-    public string value { private get; init; } = default!;
-    public string gasPrice { private get; init; } = default!;
-    public string isError { private get; init; } = default!;
-    public string? txreceipt_status { private get; init; } = default;
+    [JsonInclude] public string value { private get; init; } = default!;
+    [JsonInclude] public string gasPrice { private get; init; } = default!;
+    [JsonInclude] public string isError { private get; init; } = default!;
+    [JsonInclude] public string? txreceipt_status { private get; init; } = default;
 
     public long BlockNumber { get; init; }
     public long Timestamp { get; init; }

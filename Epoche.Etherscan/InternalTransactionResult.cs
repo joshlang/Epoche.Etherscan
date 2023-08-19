@@ -2,8 +2,8 @@
 
 public class InternalTransactionResult
 {
-    public string value { private get; init; } = default!;
-    public string isError { private get; init; } = default!;
+    [JsonInclude] public string value { private get; init; } = default!;
+    [JsonInclude] public string isError { private get; init; } = default!;
 
     public long BlockNumber { get; init; }
     public long Timestamp { get; init; }
