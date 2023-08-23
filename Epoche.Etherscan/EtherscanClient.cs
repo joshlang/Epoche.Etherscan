@@ -166,6 +166,24 @@ public class EtherscanClient
         return GetMultiPageResultAsync<TokenTransferResult>("account", "tokentx", cancellationToken, p.ToArray());
     }
 
+    public Task<ERC721TokenTransferResult[]> GetERC721TokenTransfersAsync(string? address, string? contractAddress = null, long startBlock = 0, long endBlock = 9999999999999999L, CancellationToken cancellationToken = default)
+    {
+        var p = new List<(string, string)>
+        {
+            ("startblock", startBlock.ToString()),
+            ("endblock", endBlock.ToString())
+        };
+        if (!string.IsNullOrEmpty(address))
+        {
+            p.Add(("address", address));
+        }
+        if (!string.IsNullOrEmpty(contractAddress))
+        {
+            p.Add(("contractaddress", contractAddress));
+        }
+        return GetMultiPageResultAsync<ERC721TokenTransferResult>("account", "tokennfttx", cancellationToken, p.ToArray());
+    }
+
     public Task<InternalTransactionResult[]> GetInternalTransactionsAsync(string? address = null, string? transactionHash = null, long startBlock = 0, long endBlock = 9999999999999999L, CancellationToken cancellationToken = default)
     {
         var p = new List<(string, string)>
