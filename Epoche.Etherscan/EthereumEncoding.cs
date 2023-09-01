@@ -50,7 +50,7 @@ public static class EthereumEncoding
     /// <summary>
     /// Skips the first 4 bytes (function selector), and returns 32-byte (64-char) string chunks
     /// </summary>
-    public static IEnumerable<string> FunctionParameters(string input)
+    public static string[] FunctionParameters(string input)
     {
         input = input.Strip0x();
         if (input.Length < 8 || (input.Length - 8) % 64 != 0)
@@ -58,10 +58,12 @@ public static class EthereumEncoding
             throw new EtherscanException($"'{input}' does not appear to be a function call input");
         }
         input = input[8..];
+        var p = new List<string>();
         while (input != "")
         {
-            yield return input[..64];
+            p.Add(input[..64]);
             input = input[64..];
         }
+        return p.ToArray();
     }
 }
